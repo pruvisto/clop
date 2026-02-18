@@ -24,9 +24,15 @@ The full list of document commands that are treated as comments is:
  - `subparagraph`
  
 
-## Disclaimer
+## Disclaimer and Known Issues
  
-Note that since `clop` uses ad-hoc regular expressions rather than Isabelle's own lexer (which a more robust tool ought to do), this is all somewhat brittle and may not give accurate results in all cases.
+Since `clop` uses ad-hoc regular expressions rather than Isabelle's own lexer (which a more robust tool ought to do), this is all somewhat brittle and may not give accurate results in all cases.
+
+Some potential issues:
+
+ - The use of recursive regexes might also lead to exceptionally poor performance in some cases (a simple dedicated parser would probably perform better).
+ 
+ - In particular, `(* … *)` comments are also removed inside inner syntax, which does not match the behaviour of Isabelle anymore. This is mostly harmless, except that it causes problems with the Haskell-like syntax to convert infix operator into functions (i.e. `(op)`) when the operator sarts with a `*`, e.g. `(*)` or `(*v)`. Fixing this would require recognising inner syntax, which is difficult to do properly since it is hard to detect inner syntax with a simple parser. As a quick-and-dirty fix, `clop` simply modifies its regex for comments to exclude things like `(*)`, `(*v)`, and `(*R)`. This does not match the lexical syntax of Isabelle perfectly, but it is a reasonable workaround.
 
 More generally, this tool is just a quick-and-dirty experiment and has not been thoroughly tested. Use at your own peril.
 

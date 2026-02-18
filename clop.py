@@ -4,27 +4,16 @@ import sys
 import os
 
 re_newline_beginning = regex.compile(r'^\s*\n')
-re_double_newline = regex.compile(r'\n\s*\n')
+re_double_newline = regex.compile(r'\n\n+')
 
 def remove_regex_occs(rs, s):
-    l_old = len(s)
-    while True:
-        for r in rs:
-            s = r.sub("", s)
-        l = len(s)
-        if l == l_old: break
-        l_old = l
-
-        s = re_newline_beginning.sub('', s)
-        while True:
-            s = re_double_newline.sub('\n', s)
-            l = len(s)
-            if l == l_old: break
-            l_old = l
+    for r in rs: s = r.sub("", s)
+    s = re_newline_beginning.sub('', s)
+    s = re_double_newline.sub('\n', s)
     return s
 
 re_text = regex.compile(r'(^|\s)(?:\\<comment>|txt|text|chapter|section|subsection|subsubsection|paragraph|subparagraph)\s*(?<cartouche>\\<open>(?:(?:(?!\\<open>|\\<close>).)+|(?&cartouche))*\\<close>)', regex.DOTALL)
-re_comment = regex.compile(r'\(\*((?:(?!\(\*|\*\)).)+|(?R))*\*\)', regex.DOTALL)
+re_comment = regex.compile(r'\(\*(?!(?>[A-Za-z0-9\.\*]|\\<\^?[A-Za-z0-9]+>)*\))((?:(?!\(\*|\*\)).)+|(?R))*\*\)', regex.DOTALL)
 regexes = [re_comment, re_text]
 
 grand_total = 0
@@ -35,6 +24,7 @@ def handle_files(header, paths):
     maxwidth2 = 1
     total = 0
     for path in paths:
+        print(path)
         with open(path, 'r') as f:
             s = f.read()
             s = remove_regex_occs(regexes, s)
@@ -49,7 +39,7 @@ def handle_files(header, paths):
     print((maxwidth1 + maxwidth2) * '-')            
     print(header)
     print((maxwidth1 + maxwidth2) * '-')            
-    for path, lc in sorted(results.items(), key = lambda item: item[0	]):
+    for path, lc in sorted(results.items(), key = lambda item: item[0]):
         fn = os.path.basename(path)
         if fn[-4:] == '.thy': fn = fn[:-4]
         print ('{}{}{}'.format(fn, (maxwidth1 + maxwidth2 - len(fn) - len(str(lc))) * ' ', lc))
@@ -91,7 +81,7 @@ def main():
         else:
             header = os.path.basename(path)
         if not header:
-            header = os.path.dirname(path)
+            header = os.path.basename(os.path.dirname(path))
         handle_files(header, paths)
         n -= 1
         if n > 0: print('')
