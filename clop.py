@@ -24,7 +24,6 @@ def handle_files(header, paths):
     maxwidth2 = 1
     total = 0
     for path in paths:
-        print(path)
         with open(path, 'r') as f:
             s = f.read()
             s = remove_regex_occs(regexes, s)
